@@ -6,7 +6,7 @@ import { DamageTuple } from '../entities/Stats';
 
 class Sven implements Hero {
   name = 'Sven';
-  level = 0;
+  level = 1;
   experience = 0;
   gold = 600;
   primaryAttribute = Attributes.strength;

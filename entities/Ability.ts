@@ -22,6 +22,9 @@ export interface Ability {
   target: AbilityTarget;
   damage: Array<number>;
   damageType: DamageTypes,
+  coolDown: Array<number>,
+  manaCost: Array<number>,
+  castRange: number;
   disableDuration?: number;
   stunDuration?: Array<number>;
 }
