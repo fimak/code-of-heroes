@@ -1,19 +1,14 @@
 import { AbilityList } from '../Abilities';
-import { AbilityTarget } from '../entities/Ability';
 import { Attributes } from '../entities/Attribute';
 import { AttackTypes, Hero, PositionTuple } from '../entities/Hero';
 import { DamageTuple } from '../entities/Stats';
 
-class Lina implements Hero {
+export class Lina extends Hero {
   name = 'Lina';
-  level = 1;
-  experience = 0;
-  gold = 600;
   primaryAttribute = Attributes.intelligence;
   attackType = AttackTypes.ranged;
-  abilities = [AbilityList[0]];
-  position = [1000, 1000] as PositionTuple;
-  equipment = [];
+  abilities = [AbilityList[1]];
+  position = [1, 1000] as PositionTuple;
   stats = {
     strength: 20,
     strengthIncrease: 2.4,
@@ -37,29 +32,5 @@ class Lina implements Hero {
     visionRange: 1800,
     evasion: 0,
   };
-  attackPoint: Hero | null;
-
-  move(position) {
-    this.position = position;
-    console.log(`${this.name} moved to ${position}.\n`);
-  }
-
-  attack() {
-    if (this.attackPoint) {
-      const min = this.stats.damage[0];
-      const max = this.stats.damage[1];
-      const damage = Math.floor(Math.random() * (max - min + 1)) + min;
-      console.log(`${this.name} attacked the ${this.attackPoint.name} and dealt ${damage} damage.\n`);
-    } else {
-      console.log(`${this.name} miss.\n`);
-    }
-  }
-
-  spell(ability) {
-    if (this.attackPoint && ability.target === AbilityTarget.direct) {
-      console.log(`${this.name} spell ${ability.name}.\n`);
-    } else {
-      console.log(`${this.name} can't spell ${ability.name}.\n`);
-    }
-  }
+  attackPoint = null;
 }
