@@ -5,5 +5,8 @@ import { Sven } from './heroes/Sven';
 const sven = new Hero(Sven);
 const lina = new Hero(Lina);
 
-sven.move([1, 100]);
-lina.move([1, 101]);
+// sven.move([1, 100]);
+// lina.move([1, 101]);
+
+sven.attack();
+sven.attack(lina);

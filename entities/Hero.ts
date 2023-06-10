@@ -2,7 +2,8 @@ import { Ability, AbilityTarget } from './Ability';
 import { AttackTypes } from './Attack';
 import {
   AGILITY_ARMOR_BONUS,
-  Attributes, INTELLIGENCE_MAGIC_RESISTANCE_BONUS,
+  Attributes,
+  INTELLIGENCE_MAGIC_RESISTANCE_BONUS,
   INTELLIGENCE_MANA_BONUS,
   INTELLIGENCE_MANA_REGEN_BONUS,
   STRENGTH_HEALTH_BONUS,
@@ -92,28 +93,57 @@ export class Hero implements IHero {
     console.log(`Hero ${this.name} has been created!`);
     console.log(`Health: ${this.stats.health}/${this.stats.healthMaximum()}`);
     console.log(`Mana: ${this.stats.mana}/${this.stats.manaMaximum()}`);
+    console.log('---------------------------');
   }
-
 
   move(position: PositionTuple) {
     this.position = position;
-    console.log(`${this.name} moved to ${position}.\n`);
+    console.log(`${this.name} moved to ${position}.`);
   }
-  attack() {
+  checkAttackRange(target: Hero) {
+    const x = Math.abs(target.position[0] - this.position[0]);
+    const y = Math.abs(target.position[1] - this.position[1]);
+    return (x + y) <= this.stats.attackRange;
+  }
+  calcDamage() {
+    const min = this.stats.damage()[0];
+    const max = this.stats.damage()[1];
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  attack(target?: Hero) {
+    if (target) {
+      this.attackPoint = target;
+    }
     if (this.attackPoint) {
-      const min = this.stats.damage()[0];
-      const max = this.stats.damage()[1];
-      const damage = Math.floor(Math.random() * (max - min + 1)) + min;
-      console.log(`${this.name} attacked the ${this.attackPoint.name } and dealt ${damage} damage.\n`);
+      console.log(`${this.name} is going to attack ${this.attackPoint.name}.`);
+      const isInRage = this.checkAttackRange(this.attackPoint as Hero);
+      if (isInRage) {
+        const damage = this.calcDamage();
+        this.attackPoint.stats.health -= damage;
+        console.log('Boom!');
+        console.log(`${this.name} attacked the ${this.attackPoint.name } and dealt ${damage} damage.`);
+        if (this.attackPoint.stats.health <= 0) {
+          console.log(`${this.attackPoint.name} has dead!`);
+          this.attackPoint = null;
+          console.log(`${this.name} stopped.`);
+        } else {
+          console.log(`${this.attackPoint.name}'s health: ${this.attackPoint.stats.health}/${this.attackPoint.stats.healthMaximum()}`);
+          this.attack();
+        }
+      } else {
+        console.log(`${this.name}: "Target is too far!"`);
+        this.move([this.position[0], this.attackPoint.position[1] - this.stats.attackRange]);
+        this.attack();
+      }
     } else {
-      console.log(`${this.name} miss.\n`);
+      console.log(`${this.name} miss.`);
     }
   }
   spell(ability: Ability) {
     if (this.attackPoint && ability.target === AbilityTarget.direct) {
-      console.log(`${this.name} spell ${ability.name}.\n`);
+      console.log(`${this.name} spell ${ability.name}.`);
     } else {
-      console.log(`${this.name} can't spell ${ability.name}.\n`);
+      console.log(`${this.name} can't spell ${ability.name}.`);
     }
   }
 }
