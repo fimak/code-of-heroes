@@ -1,3 +1,8 @@
+export enum AttackTypes {
+  melee = 'MELEE',
+  ranged = 'RANGED',
+}
+
 enum AttackModifiers {
   criticalStrike = 'CRITICAL_STRIKE',
   splash = 'SPLASH',
