@@ -35,8 +35,8 @@ export interface IHero {
   stats: Stats;
   attackPoint: IHero | null;
   move(position: PositionTuple): void;
-  attack(): void;
-  spell(ability: Ability): void;
+  attack(target?: IHero): void;
+  spell(ability: Ability, target?: IHero): void;
 }
 
 export class Hero implements IHero {
@@ -76,7 +76,7 @@ export class Hero implements IHero {
       manaMaximum: () => params.mana + INTELLIGENCE_MANA_BONUS * this.stats.intelligence,
       manaRegeneration: () => params.manaRegeneration + INTELLIGENCE_MANA_REGEN_BONUS * this.stats.intelligenceIncrease,
       armor: () => params.armor + AGILITY_ARMOR_BONUS * this.stats.agility,
-      magicResistance: () => params.magicResistance + INTELLIGENCE_MAGIC_RESISTANCE_BONUS * this.stats.intelligence,
+      magicResistance: () => params.magicResistance + INTELLIGENCE_MAGIC_RESISTANCE_BONUS * this.stats.intelligence / 100,
       statusResistance: 0,
       damage: () => {
         const min = params.damage[0] + this.stats[params.primaryAttribute];
@@ -100,15 +100,29 @@ export class Hero implements IHero {
     this.position = position;
     console.log(`${this.name} moved to ${position}.`);
   }
-  checkAttackRange(target: Hero) {
+  checkAttackRange(target: Hero, range: number) {
     const x = Math.abs(target.position[0] - this.position[0]);
     const y = Math.abs(target.position[1] - this.position[1]);
-    return (x + y) <= this.stats.attackRange;
+    return (x + y) <= range;
   }
-  calcDamage() {
+  calcPhysicDamage() {
     const min = this.stats.damage()[0];
     const max = this.stats.damage()[1];
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  calcMagicDamage(damage: number) {
+    const resistance = this.attackPoint?.stats.magicResistance() ? this.attackPoint?.stats.magicResistance() : 0;
+    return damage - damage * resistance;
+  }
+  checkEnemyHealth(target: Hero) {
+    if (target.stats.health <= 0) {
+      console.log(`${target.name} has dead!`);
+      this.attackPoint = null;
+      console.log(`${this.name} stopped.`);
+    } else {
+      console.log(`${target.name}'s health: ${target.stats.health}/${target.stats.healthMaximum()}`);
+      this.attack();
+    }
   }
   attack(target?: Hero) {
     if (target) {
@@ -116,20 +130,13 @@ export class Hero implements IHero {
     }
     if (this.attackPoint) {
       console.log(`${this.name} is going to attack ${this.attackPoint.name}.`);
-      const isInRage = this.checkAttackRange(this.attackPoint as Hero);
+      const isInRage = this.checkAttackRange(this.attackPoint as Hero, this.stats.attackRange);
       if (isInRage) {
-        const damage = this.calcDamage();
+        const damage = this.calcPhysicDamage();
         this.attackPoint.stats.health -= damage;
         console.log('Boom!');
         console.log(`${this.name} attacked the ${this.attackPoint.name } and dealt ${damage} damage.`);
-        if (this.attackPoint.stats.health <= 0) {
-          console.log(`${this.attackPoint.name} has dead!`);
-          this.attackPoint = null;
-          console.log(`${this.name} stopped.`);
-        } else {
-          console.log(`${this.attackPoint.name}'s health: ${this.attackPoint.stats.health}/${this.attackPoint.stats.healthMaximum()}`);
-          this.attack();
-        }
+        this.checkEnemyHealth(this.attackPoint as Hero);
       } else {
         console.log(`${this.name}: "Target is too far!"`);
         this.move([this.position[0], this.attackPoint.position[1] - this.stats.attackRange]);
@@ -139,9 +146,25 @@ export class Hero implements IHero {
       console.log(`${this.name} miss.`);
     }
   }
-  spell(ability: Ability) {
+  spell(ability: Ability, target?: Hero) {
+    if (target) {
+      this.attackPoint = target;
+    }
+    if (ability.coolDown) {}
     if (this.attackPoint && ability.target === AbilityTarget.direct) {
-      console.log(`${this.name} spell ${ability.name}.`);
+      console.log(`${this.name} is going to spell on ${this.attackPoint.name}.`);
+      const isInRage = this.checkAttackRange(this.attackPoint as Hero, ability.castRange);
+      if (isInRage) {
+        const damage = this.calcMagicDamage(ability.damage[0]);
+        this.attackPoint.stats.health -= damage;
+        console.log('Whoosh!');
+        console.log(`${this.name} spell ${ability.name} on ${this.attackPoint.name } and dealt ${damage} damage.`);
+        this.checkEnemyHealth(this.attackPoint as Hero);
+      } else {
+        console.log(`${this.name}: "Target is too far!"`);
+        this.move([this.position[0], this.attackPoint.position[1] - this.stats.attackRange]);
+        this.spell(ability);
+      }
     } else {
       console.log(`${this.name} can't spell ${ability.name}.`);
     }

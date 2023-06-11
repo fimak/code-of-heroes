@@ -8,5 +8,8 @@ const lina = new Hero(Lina);
 // sven.move([1, 100]);
 // lina.move([1, 101]);
 
-sven.attack();
-sven.attack(lina);
+// sven.attack();
+// sven.attack(lina);
+
+// sven.spell(sven.abilities[0], lina);
+// lina.spell(lina.abilities[0], sven);
