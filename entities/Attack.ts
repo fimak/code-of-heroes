@@ -70,22 +70,26 @@ export class AttackHandler {
   }
 
   calcMagicDamage(damage: number) {
-    const resistance = this.hero.target?.statsHandler.getStats().magicResistance() ? this.hero.target?.statsHandler.getStats().magicResistance() : 0;
+    const resistance = this.hero.target?.statsHandler.getStats().magicResistance() || 0;
     return damage - damage * resistance;
   }
 
-  checkEnemyHealth(target: Hero) {
+  checkEnemyHealth(target: Hero, auto = false) {
     if (target.statsHandler.getStats().health <= 0) {
       console.log(`${target.name} has dead!`);
       this.hero.target = null;
       console.log(`${this.hero.name} stopped.`);
     } else {
       console.log(`${target.name}'s health: ${target.statsHandler.getStats().health}/${target.statsHandler.getStats().healthMaximum()}`);
-      this.attack();
+      if (auto) {
+        this.attack();
+      } else {
+        console.log(`${this.hero.name} stopped.`);
+      }
     }
   }
 
-  attack(target?: Hero) {
+  attack(target?: Hero, auto = true) {
     if (target) {
       this.hero.target = target;
     }
@@ -97,11 +101,15 @@ export class AttackHandler {
         this.hero.target.statsHandler.getStats().health -= damage;
         console.log('Boom!');
         console.log(`${this.hero.name} attacked the ${this.hero.target.name } and dealt ${damage} damage.`);
-        this.checkEnemyHealth(this.hero.target as Hero);
+        this.checkEnemyHealth(this.hero.target as Hero, auto);
       } else {
         console.log(`${this.hero.name}: "Target is too far!"`);
-        this.hero.move([this.hero.positionHandler.getPosition()[0], this.hero.target.positionHandler.getPosition()[1] - this.hero.statsHandler.getStats().attackRange]);
-        this.attack();
+        if (auto) {
+          this.hero.move([this.hero.positionHandler.getPosition()[0], this.hero.target.positionHandler.getPosition()[1] - this.hero.statsHandler.getStats().attackRange]);
+          this.attack();
+        } else {
+          console.log(`${this.hero.name} stopped.`);
+        }
       }
     } else {
       console.log(`${this.hero.name} miss.`);

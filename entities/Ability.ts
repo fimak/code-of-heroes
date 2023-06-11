@@ -47,6 +47,7 @@ export class AbilityHandler {
         const damage = owner.attackHandler.calcMagicDamage(ability.damage[0]);
         target.statsHandler.getStats().health -= damage;
         console.log('Whoosh!');
+        owner.statsHandler.getStats().mana -= ability.manaCost[0];
         console.log(`${owner.name} spell ${ability.name} on ${target.name } and dealt ${damage} damage.`);
         owner.attackHandler.checkEnemyHealth(target as Hero);
       } else {
