@@ -54,35 +54,33 @@ enum Dispelling {
 
 export class AttackHandler {
   private hero: Hero;
-  private positionHandler: Position;
 
-  constructor(hero: Hero, positionHandler: Position) {
+  constructor(hero: Hero) {
     this.hero = hero;
-    this.positionHandler = positionHandler;
   }
 
   checkAttackRange(target: Hero, range: number) {
-    return this.positionHandler.checkAttackRange(target.positionHandler.getPosition(), range);
+    return this.hero.positionHandler.checkAttackRange(target.positionHandler.getPosition(), range);
   }
 
   calcPhysicDamage() {
-    const min = this.hero.stats.damage()[0];
-    const max = this.hero.stats.damage()[1];
+    const min = this.hero.statsHandler.getStats().damage()[0];
+    const max = this.hero.statsHandler.getStats().damage()[1];
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   calcMagicDamage(damage: number) {
-    const resistance = this.hero.target?.stats.magicResistance() ? this.hero.target?.stats.magicResistance() : 0;
+    const resistance = this.hero.target?.statsHandler.getStats().magicResistance() ? this.hero.target?.statsHandler.getStats().magicResistance() : 0;
     return damage - damage * resistance;
   }
 
   checkEnemyHealth(target: Hero) {
-    if (target.stats.health <= 0) {
+    if (target.statsHandler.getStats().health <= 0) {
       console.log(`${target.name} has dead!`);
       this.hero.target = null;
       console.log(`${this.hero.name} stopped.`);
     } else {
-      console.log(`${target.name}'s health: ${target.stats.health}/${target.stats.healthMaximum()}`);
+      console.log(`${target.name}'s health: ${target.statsHandler.getStats().health}/${target.statsHandler.getStats().healthMaximum()}`);
       this.attack();
     }
   }
@@ -93,16 +91,16 @@ export class AttackHandler {
     }
     if (this.hero.target) {
       console.log(`${this.hero.name} is going to attack ${this.hero.target.name}.`);
-      const isInRage = this.checkAttackRange(this.hero.target as Hero, this.hero.stats.attackRange);
+      const isInRage = this.checkAttackRange(this.hero.target as Hero, this.hero.statsHandler.getStats().attackRange);
       if (isInRage) {
         const damage = this.calcPhysicDamage();
-        this.hero.target.stats.health -= damage;
+        this.hero.target.statsHandler.getStats().health -= damage;
         console.log('Boom!');
         console.log(`${this.hero.name} attacked the ${this.hero.target.name } and dealt ${damage} damage.`);
         this.checkEnemyHealth(this.hero.target as Hero);
       } else {
         console.log(`${this.hero.name}: "Target is too far!"`);
-        this.hero.move([this.positionHandler.getPosition()[0], this.hero.target.positionHandler.getPosition()[1] - this.hero.stats.attackRange]);
+        this.hero.move([this.hero.positionHandler.getPosition()[0], this.hero.target.positionHandler.getPosition()[1] - this.hero.statsHandler.getStats().attackRange]);
         this.attack();
       }
     } else {
