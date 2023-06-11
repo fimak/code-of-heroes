@@ -1,4 +1,4 @@
-import { Ability, AbilityTarget } from './Ability';
+import { Ability, AbilityHandler, AbilityTarget } from './Ability';
 import { AttackTypes } from './Attack';
 import {
   AGILITY_ARMOR_BONUS,
@@ -30,9 +30,10 @@ export interface IHero {
   gold: number;
   primaryAttribute: Attributes;
   attackType: AttackTypes;
-  abilities: Array<Ability>;
+  // abilities: Array<Ability>;
+  abilityHandler: AbilityHandler;
   // position: PositionTuple;
-  position: Position;
+  positionHandler: Position;
   equipment: Array<Item>;
   stats: Stats;
   target: IHero | null;
@@ -48,8 +49,8 @@ export class Hero implements IHero {
   public gold;
   public primaryAttribute;
   public attackType;
-  public abilities;
-  public position;
+  public abilityHandler;
+  public positionHandler;
   public equipment: Array<Item>;
   public stats: Stats;
   public target: IHero | null;
@@ -61,8 +62,8 @@ export class Hero implements IHero {
     this.gold = 600;
     this.primaryAttribute = params.primaryAttribute;
     this.attackType = params.attackType;
-    this.abilities = params.abilities;
-    this.position = new Position(params.position);
+    this.abilityHandler = new AbilityHandler(params.abilities);
+    this.positionHandler = new Position(params.position);
     this.equipment = [];
     this.stats = {
       strength: params.strength,
@@ -99,11 +100,11 @@ export class Hero implements IHero {
   }
 
   move(position: PositionTuple) {
-    this.position.move(position);
+    this.positionHandler.move(position);
   }
 
   checkAttackRange(target: Hero, range: number) {
-    return this.position.checkAttackRange(target.position.getPosition(), range);
+    return this.positionHandler.checkAttackRange(target.positionHandler.getPosition(), range);
   }
 
   calcPhysicDamage() {
@@ -143,7 +144,7 @@ export class Hero implements IHero {
         this.checkEnemyHealth(this.target as Hero);
       } else {
         console.log(`${this.name}: "Target is too far!"`);
-        this.move([this.position.getPosition()[0], this.target.position.getPosition()[1] - this.stats.attackRange]);
+        this.move([this.positionHandler.getPosition()[0], this.target.positionHandler.getPosition()[1] - this.stats.attackRange]);
         this.attack();
       }
     } else {
@@ -155,23 +156,6 @@ export class Hero implements IHero {
     if (target) {
       this.target = target;
     }
-    if (ability.coolDown) {}
-    if (this.target && ability.target === AbilityTarget.direct) {
-      console.log(`${this.name} is going to spell on ${this.target.name}.`);
-      const isInRage = this.checkAttackRange(this.target as Hero, ability.castRange);
-      if (isInRage) {
-        const damage = this.calcMagicDamage(ability.damage[0]);
-        this.target.stats.health -= damage;
-        console.log('Whoosh!');
-        console.log(`${this.name} spell ${ability.name} on ${this.target.name } and dealt ${damage} damage.`);
-        this.checkEnemyHealth(this.target as Hero);
-      } else {
-        console.log(`${this.name}: "Target is too far!"`);
-        this.move([this.position.getPosition()[0], this.target.position.getPosition()[1] - this.stats.attackRange]);
-        this.spell(ability);
-      }
-    } else {
-      console.log(`${this.name} can't spell ${ability.name}.`);
-    }
+    this.abilityHandler.useAbility(ability, this, target as Hero);
   }
 }
