@@ -44,11 +44,11 @@ export class AbilityHandler {
       console.log(`${owner.name} is going to use ability ${ability.name} on ${target.name}.`);
       const isInRage = owner.positionHandler.checkAttackRange(target.positionHandler.getPosition(), ability.castRange);
       if (isInRage) {
-        const damage = owner.calcMagicDamage(ability.damage[0]);
+        const damage = owner.attackHandler.calcMagicDamage(ability.damage[0]);
         target.stats.health -= damage;
         console.log('Whoosh!');
         console.log(`${owner.name} spell ${ability.name} on ${target.name } and dealt ${damage} damage.`);
-        owner.checkEnemyHealth(target as Hero);
+        owner.attackHandler.checkEnemyHealth(target as Hero);
       } else {
         console.log(`${owner.name}: "Target is too far!"`);
         owner.move([owner.positionHandler.getPosition()[0], target.positionHandler.getPosition()[1] - owner.stats.attackRange]);
