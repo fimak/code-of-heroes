@@ -1,3 +1,5 @@
+
+
 # Code Of Heroes
 
 Two more possible names for the game are 
@@ -40,7 +42,7 @@ To run the game server locally, use:
 npm start
 ```
 
-This will start the game server at localhost:3000.
+This will run the `start` script from `package.json`.
 
 ## Contributing
 
